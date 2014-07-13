@@ -24,6 +24,7 @@ function parseDepFile(path, testDeps) {
   for (depName in deps) {
     pkgs.push(depName);
   }
+
   return pkgs;
 };
 
@@ -50,6 +51,7 @@ function srcDeps(pkgrs, testDeps) {
   var testDeps = testDeps || false,
       pkgrs = pkgrs || ['bower', 'npm'],
       files = loadDeps('npm', parseDepFile('./' + PKGRS['npm'].depFile));
+      
   return gulp.src(files);
 };
 
