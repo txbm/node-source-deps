@@ -18,11 +18,18 @@ var PKGRS = {
 function parseDepFile(path, testDeps) {
   var depFile = require(path),
       deps = depFile.dependencies,
+      testDeps = depFile.devDependencies,
       pkgs = [],
       depName;
 
   for (depName in deps) {
     pkgs.push(depName);
+  }
+
+  if (testDeps) {
+    for (depName in testDeps) {
+      pkgs.push(depName);
+    }
   }
 
   return pkgs;
@@ -38,7 +45,7 @@ function loadDeps(pkgr, pkgs) {
     depDepFile = require(p.join(srcPath, pkg, PKGRS[pkgr].depFile)),
     mainPath = depDepFile.main || '';
     if (mainPath) {
-      files.push(p.join(srcPath, mainPath));
+      files.push(p.join(srcPath, pkg, mainPath));
     } else {
       console.warn('Package ' + pkg + ' does not contain a main path!');
     }
@@ -50,8 +57,14 @@ function loadDeps(pkgr, pkgs) {
 function srcDeps(pkgrs, testDeps) {
   var testDeps = testDeps || false,
       pkgrs = pkgrs || ['bower', 'npm'],
-      files = loadDeps('npm', parseDepFile('./' + PKGRS['npm'].depFile));
-      
+      files = loadDeps('npm', parseDepFile(p.join(cwd, PKGRS['npm'].depFile)));
+
+  if (!files.length) {
+    return;
+  }
+
+  console.log(files);
+
   return gulp.src(files);
 };
 

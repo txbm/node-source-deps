@@ -2,7 +2,12 @@
 
 describe('srcDep Gulp Plugin', function () {
 
-  var x = require('../src/main.js');
+  var srcDeps = require('../src/main.js'),
+      gulp = require('gulp');
+
+
+  
+  var x = srcDeps(['npm'], true);
 
   console.log(x);
 
