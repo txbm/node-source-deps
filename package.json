@@ -28,7 +28,8 @@
     "gulp-concat": "^2.3.3",
     "gulp-git": "^0.4.3",
     "gulp-jasmine": "^0.2.0",
-    "gulp-load-plugins": "^0.5.3"
+    "gulp-load-plugins": "^0.5.3",
+    "yargs": "^1.2.6"
   },
   "dependencies": {
     "gulp-util": "^2.2.20"
