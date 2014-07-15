@@ -1,8 +1,8 @@
 {
   "name": "gulp-srcdeps",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A gulp plugin for automatically discovering and src'ing dependencies from Bower and NPM.",
-  "main": "src/main.js",
+  "main": "dist/main.min.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -25,10 +25,15 @@
   "homepage": "https://github.com/petermelias/gulp-srcdeps",
   "devDependencies": {
     "gulp": "^3.8.6",
+    "gulp-bump": "^0.1.10",
     "gulp-concat": "^2.3.3",
     "gulp-git": "^0.4.3",
     "gulp-jasmine": "^0.2.0",
+    "gulp-jshint": "^1.7.1",
     "gulp-load-plugins": "^0.5.3",
+    "gulp-rename": "^1.2.0",
+    "gulp-size": "^0.4.0",
+    "gulp-uglify": "^0.3.1",
     "yargs": "^1.2.6"
   },
   "dependencies": {
