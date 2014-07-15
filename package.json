@@ -14,7 +14,8 @@
     "gulp",
     "plugin",
     "src",
-    "dependencies"
+    "dependencies",
+    "gulpplugin"
   ],
   "author": "Peter M. Elias",
   "license": "MIT",
@@ -25,7 +26,11 @@
   "devDependencies": {
     "gulp": "^3.8.6",
     "gulp-concat": "^2.3.3",
+    "gulp-git": "^0.4.3",
     "gulp-jasmine": "^0.2.0",
     "gulp-load-plugins": "^0.5.3"
+  },
+  "dependencies": {
+    "gulp-util": "^2.2.20"
   }
 }
