@@ -1,18 +1,22 @@
 'use strict';
 
-
 var gulp = require('gulp'),
     yargs = require('yargs'),
     plugins = require('gulp-load-plugins')();
 
 gulp.task('test', function () {
   return gulp.src(['src/*', 'spec/*'])
-    .pipe(plugins.jasmine());
+    .pipe(plugins.mocha({reporter: 'mocha-lcov-reporter'}));
 });
 
 gulp.task('ci', ['build'], function () {
   return gulp.src(['dist/gulp-srcdeps.min.js', 'spec/*'])
-    .pipe(plugins.jasmine());
+    .pipe(plugins.mocha({reporter: 'mocha-lcov-reporter'}));
+});
+
+gulp.task('coveralls', ['ci'], function () {
+  return gulp.src('spec/coverage/**/lcov.info')
+    .pipe(plugins.coveralls());
 });
 
 gulp.task('jshint', function () {
@@ -49,8 +53,8 @@ gulp.task('bump', function () {
 
 gulp.task('tag', function () {
   var semver = require('./package.json').version;
-  return plugins.git.tag(v)
-    .pipe(git.push('origin', 'master', '--tags'));
+  plugins.git.tag(semver, 'Release ' + semver, {}, function () {});
+  plugins.git.push('origin', 'master', {args: '--tags'}).end();
 });
 
 gulp.task('push', function () {
@@ -63,3 +67,4 @@ gulp.task('publish', function (done) {
 });
 
 gulp.task('ship', ['test', 'jslint', 'build', 'bump', 'commit', 'tag', 'push', 'publish']);
+gulp.task('save', ['test', 'jslint', 'build', 'commit', 'push']);
