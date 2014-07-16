@@ -5,6 +5,11 @@ var gulp = require('gulp'),
     yargs = require('yargs'),
     pkg = require('./package.json');
 
+function _reloadPkgFile() {
+  delete require.cache['package.json'];
+  pkg = require('./package.json');
+}
+
 gulp.task('test', ['jshint'], function (done) {
   gulp.src(['src/*', 'spec/*'])
   .pipe(plugins.istanbul())
@@ -70,8 +75,13 @@ gulp.task('bump', ['build'], function (done) {
 });
 
 gulp.task('release', ['bump'], function (done) {
-  var semver = require('./package.json').version,
-      rtype = yargs.argv.b || 'patch';
+  var rtype = yargs.argv.b || 'patch',
+      semver;
+  
+  _reloadPkgFile();
+
+  semver = pkg.version;
+
   gulp.src('./')
   .pipe(plugins.git.add())
   .pipe(plugins.git.commit(rtype + ' release: ' + semver))
