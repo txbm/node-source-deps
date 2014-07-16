@@ -4,14 +4,14 @@ var gulp = require('gulp'),
     plugins = require('gulp-load-plugins')(),
     yargs = require('yargs');
 
-gulp.task('test', function (done) {
+gulp.task('test', function () {
   gulp.src(['src/*', 'spec/*'])
   .pipe(plugins.istanbul())
   .on('finish', function () {
     gulp.src(['spec/*'])
     .pipe(plugins.mocha({reporter: 'nyan'}))
     .pipe(plugins.istanbul.writeReports())
-    .on('end', done);
+    .on('end', function () {});
   });
 });
 
