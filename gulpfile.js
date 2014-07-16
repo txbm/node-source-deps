@@ -1,22 +1,23 @@
 'use strict';
 
 var gulp = require('gulp'),
-    yargs = require('yargs'),
-    plugins = require('gulp-load-plugins')();
+    plugins = require('gulp-load-plugins')(),
+    yargs = require('yargs');
 
-gulp.task('test', function () {
-  return gulp.src(['src/*', 'spec/*'])
-    .pipe(plugins.mocha({reporter: 'mocha-lcov-reporter'}));
+gulp.task('test', function (done) {
+  gulp.src(['src/*', 'spec/*'])
+  .pipe(plugins.istanbul())
+  .on('finish', function () {
+    gulp.src(['spec/*'])
+    .pipe(plugins.mocha({reporter: 'nyan'}))
+    .pipe(plugins.istanbul.writeReports())
+    .on('end', done);
+  });
 });
 
-gulp.task('ci', ['build'], function () {
-  return gulp.src(['dist/gulp-srcdeps.min.js', 'spec/*'])
-    .pipe(plugins.mocha({reporter: 'mocha-lcov-reporter'}));
-});
-
-gulp.task('coveralls', ['ci'], function () {
-  return gulp.src('spec/coverage/**/lcov.info')
-    .pipe(plugins.coveralls());
+gulp.task('ci', ['build', 'test'], function () {
+  return gulp.src('coverage/lcov.info')
+  .pipe(plugins.coveralls());
 });
 
 gulp.task('jshint', function () {

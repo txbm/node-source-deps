@@ -4,12 +4,13 @@ describe('srcdep plugin', function () {
 
   var srcDeps = require('../src/main.js'),
       gulp = require('gulp'),
-      util = require('gulp-util');
+      util = require('gulp-util'),
+      should = require('should');
 
   it('should return a stream', function () {
-    expect(util.isStream(srcDeps({
+    should(util.isStream(srcDeps({
       packagers: ['npm']
-    }))).toBe(true);
+    }))).be.true;
   });
 
   it('should pull in npm packages', function (done) {
@@ -20,7 +21,7 @@ describe('srcdep plugin', function () {
     }).on('data', function (file) {
       deps.push(file);
     }).on('end', function () {
-      expect(deps.length).toBeGreaterThan(0);
+      should(deps.length).be.above(0);
       done();
     });
   });
@@ -34,7 +35,7 @@ describe('srcdep plugin', function () {
     }).on('data', function (file) {
       deps.push(file);
     }).on('end', function () {
-      expect(deps.length).toBeGreaterThan(0);
+      should(deps.length).be.above(0);
       done();
     });
   });
@@ -51,7 +52,7 @@ describe('srcdep plugin', function () {
     }).on('data', function (file) {
       deps.push(file);
     }).on('end', function () {
-      expect(deps.length).toBeGreaterThan(0);
+      should(deps.length).be.above(0);
       done();
     });
   });
@@ -63,7 +64,7 @@ describe('srcdep plugin', function () {
           });
         };
     
-    expect(badCall).toThrow();
+    should(badCall).throw();
   });
 
   it('should complain about missing json files for a given packager', function () {
@@ -73,6 +74,6 @@ describe('srcdep plugin', function () {
           });
         };
 
-    expect(badCall).toThrow();
+    should(badCall).throw();
   });
 });
