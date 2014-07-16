@@ -103,5 +103,5 @@ gulp.task('push-release', ['release'], function (done) {
 
 gulp.task('publish', ['push-release'], function (done) {
   require('child_process').spawn('npm', ['publish'], {stdio: 'inherit'})
-    .on('close', done);
+  .on('close', done);
 });
