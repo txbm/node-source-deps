@@ -88,12 +88,12 @@ gulp.task('release', ['bump'], function (done) {
 });
 
 gulp.task('push', ['commit'], function (done) {
-  plugins.git.push('origin', 'master', {}, done)
+  plugins.git.push('origin', 'master')
   .end();
 });
 
 gulp.task('push-release', ['release'], function (done) {
-  plugins.git.push('origin', 'master', {args: '--tags'}, done)
+  plugins.git.push('origin', 'master', {args: '--tags'})
   .end();
 });
 
