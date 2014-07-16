@@ -78,11 +78,18 @@ gulp.task('release', ['bump'], function (done) {
   var rtype = yargs.argv.b || 'patch';
   
   _reloadPkgFile();
-  
+
   gulp.src('./')
   .pipe(plugins.git.add())
   .pipe(plugins.git.commit(rtype + ' release: ' + pkg.version))
-  .on('finish', done);
+  .on('finish', function () {
+    plugins.git.tag(pkg.version, rtype + ' release ' + pkg.version)
+    .on('finish', function () {
+      plugins.git.push('origin', 'master', {args: '--tags'})
+      .on('finish', done)
+      .end();
+    });
+  });
 });
 
 gulp.task('push', ['commit'], function (done) {
@@ -92,12 +99,8 @@ gulp.task('push', ['commit'], function (done) {
 });
 
 gulp.task('push-release', ['release'], function (done) {
-  plugins.git.push('origin', 'master', {args: '--tags'})
-  .on('finish', function () {
-    plugins.git.push('origin', 'master')
-    .on('finish', done)
-    .end();
-  })
+  plugins.git.push('origin', 'master')
+  .on('finish', done)
   .end();
 });
 
