@@ -24,7 +24,6 @@
   },
   "homepage": "https://github.com/petermelias/gulp-srcdeps",
   "devDependencies": {
-    "coveralls": "^2.11.1",
     "gulp": "^3.8.6",
     "gulp-bump": "^0.1.10",
     "gulp-concat": "^2.3.3",
