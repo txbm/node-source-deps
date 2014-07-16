@@ -2,7 +2,8 @@
 
 var gulp = require('gulp'),
     plugins = require('gulp-load-plugins')(),
-    yargs = require('yargs');
+    yargs = require('yargs'),
+    pkg = require('./package.json');
 
 gulp.task('test', function () {
   gulp.src(['src/*', 'spec/*'])
@@ -27,7 +28,7 @@ gulp.task('jshint', function () {
 });
 
 gulp.task('size', ['build'], function () {
-  gulp.src('dist/gulp-srcdeps.min.js')
+  gulp.src('dist/*.min.js')
   .pipe(plugins.size());
 });
 
@@ -39,16 +40,22 @@ gulp.task('commit', function () {
 
 gulp.task('build', function () {
   gulp.src('src/*.js')
-  .pipe(plugins.concat('gulp-srcdeps.js'))
-  .pipe(gulp.dest('dist'))
+  .pipe(plugins.sourcemaps.init())
+  .pipe(plugins.concat(pkg.name + '.js'))
+  .pipe(plugins.sourcemaps.write('./', {addComment: false}))
+  .pipe(gulp.dest('dist'));
+
+  gulp.src('src/*.js')
+  .pipe(plugins.sourcemaps.init())
+  .pipe(plugins.concat(pkg.name + '.min.js'))
   .pipe(plugins.uglify())
-  .pipe(plugins.rename('gulp-srcdeps.min.js'))
+  .pipe(plugins.sourcemaps.write('./', {addComment: false}))
   .pipe(gulp.dest('dist'));
 });
 
 gulp.task('bump', function () {
   gulp.src('./package.json')
-  .pipe(plugins.bump({type: yargs.argv.b}))
+  .pipe(plugins.bump({type: yargs.argv.b || 'patch'}))
   .pipe(gulp.dest('./'));
 });
 
@@ -67,5 +74,6 @@ gulp.task('publish', function (done) {
     .on('close', done);
 });
 
+gulp.task('full', ['test', 'jshint', 'build']);
 gulp.task('ship', ['test', 'jshint', 'build', 'bump', 'commit', 'tag', 'push', 'publish']);
 gulp.task('save', ['test', 'jshint', 'build', 'commit', 'push']);
