@@ -6,7 +6,7 @@ var gulp = require('gulp'),
     pkg = require('./package.json');
 
 function _reloadPkgFile() {
-  delete require.cache['gulp-srcdeps'];
+  delete require.cache[require.resolve('./package.json')];
   pkg = require('./package.json');
 }
 
@@ -75,16 +75,13 @@ gulp.task('bump', ['build'], function (done) {
 });
 
 gulp.task('release', ['bump'], function (done) {
-  var rtype = yargs.argv.b || 'patch',
-      semver;
+  var rtype = yargs.argv.b || 'patch';
   
   _reloadPkgFile();
-
-  semver = pkg.version;
-
+  
   gulp.src('./')
   .pipe(plugins.git.add())
-  .pipe(plugins.git.commit(rtype + ' release: ' + semver))
+  .pipe(plugins.git.commit(rtype + ' release: ' + pkg.version))
   .on('finish', done);
 });
 
