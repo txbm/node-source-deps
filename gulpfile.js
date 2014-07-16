@@ -31,10 +31,10 @@ gulp.task('size', ['build'], function () {
     .pipe(plugins.size());
 });
 
-gulp.task('commit', ['ci'], function () {
+gulp.task('commit', function () {
   return gulp.src('./')
     .pipe(plugins.git.add())
-    .pipe(plugins.git.commit(yargs.argv.m));
+    .pipe(plugins.git.commit(yargs.argv.m || 'automatic commit by gulp task'));
 });
 
 gulp.task('build', function () {
@@ -67,5 +67,5 @@ gulp.task('publish', function (done) {
     .on('close', done);
 });
 
-gulp.task('ship', ['test', 'jslint', 'build', 'bump', 'commit', 'tag', 'push', 'publish']);
-gulp.task('save', ['test', 'jslint', 'build', 'commit', 'push']);
+gulp.task('ship', ['test', 'jshint', 'build', 'bump', 'commit', 'tag', 'push', 'publish']);
+gulp.task('save', ['test', 'jshint', 'build', 'commit', 'push']);
