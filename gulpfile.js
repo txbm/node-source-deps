@@ -6,8 +6,7 @@ var gulp = require('gulp'),
     pkg = require('./package.json');
 
 function _reloadPkgFile() {
-  delete require.cache['package.json'];
-  console.log(require.cache);
+  delete require.cache['gulp-srcdeps'];
   pkg = require('./package.json');
 }
 
