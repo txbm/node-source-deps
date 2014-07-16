@@ -90,14 +90,14 @@ gulp.task('release', ['bump'], function (done) {
 });
 
 gulp.task('push', ['commit'], function (done) {
-  plugins.git.push('origin', 'master', {}, done)
+  plugins.git.push('origin', 'master')
+  .on('finish', done)
   .end();
 });
 
 gulp.task('push-release', ['release'], function (done) {
-  plugins.git.push('origin', 'master', {args: '--tags'}, function () {
-    done();
-  })
+  plugins.git.push('origin', 'master', {args: '--tags'})
+  .on('finish', done)
   .end();
 });
 
