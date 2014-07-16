@@ -95,7 +95,7 @@ gulp.task('push', ['commit'], function (done) {
 });
 
 gulp.task('push-release', ['release'], function (done) {
-  plugins.git.push('origin', 'master', {args: '--tags'})
+  plugins.git.push('origin', 'master', {args: '--tags'}, done)
   .end();
 });
 
