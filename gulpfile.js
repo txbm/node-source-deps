@@ -35,7 +35,7 @@ gulp.task('size', ['build'], function (done) {
   .on('finish', done);
 });
 
-gulp.task('commit', function (done) {
+gulp.task('commit', ['build'], function (done) {
   gulp.src('./')
   .pipe(plugins.git.add())
   .pipe(plugins.git.commit(yargs.argv.m || 'automatic commit by gulp task'))
@@ -60,32 +60,41 @@ gulp.task('build', ['test'], function (done) {
 });
 
 // MAJOR, MINOR, PATCH, PRERELEASE
-gulp.task('release', function (done) {
+gulp.task('bump', ['build'], function (done) {
   var rtype = yargs.argv.b || 'patch';
   
   gulp.src('./package.json')
   .pipe(plugins.bump({type: rtype}))
   .pipe(gulp.dest('./'))
-  .on('finish', function () {
-    var semver = require('./package.json').version;
-    gulp.src('./')
-    .pipe(plugins.git.add())
-    .pipe(plugins.git.commit(rtype + ' release: ' + semver));
-  });
+  .on('finish', done);
+});
+
+gulp.task('release', ['bump'], function (done) {
+  var semver = require('./package.json').version,
+      rtype = yargs.argv.b || 'patch';
+  gulp.src('./')
+  .pipe(plugins.git.add())
+  .pipe(plugins.git.commit(rtype + ' release: ' + semver))
+  .on('finish', done);
 });
 
 gulp.task('push', ['commit'], function (done) {
   plugins.git.push('origin', 'master')
-  .on('end', function () {
-    plugins.git.push('origin', 'master', {args: '--tags'})
-    .on('end', done);
-  });
+  .on('finish', done)
+  .end();
 });
 
-gulp.task('publish', function (done) {
+gulp.task('push-release', ['release'], function (done) {
+  plugins.git.push('origin', 'master', {args: '--tags'})
+  .on('finish', function () {
+    plugins.git.push('origin', 'master')
+    .on('finish', done)
+    .end();
+  })
+  .end();
+});
+
+gulp.task('publish', ['push-release'], function (done) {
   require('child_process').spawn('npm', ['publish'], {stdio: 'inherit'})
     .on('close', done);
 });
-
-gulp.task('ship', ['build', 'bump', 'commit', 'tag', 'push', 'publish']);
-gulp.task('save', ['test', 'jshint', 'build', 'commit', 'push']);
