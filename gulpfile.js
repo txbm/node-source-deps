@@ -90,7 +90,7 @@ gulp.task('release', ['bump'], function (done) {
 });
 
 gulp.task('push', ['commit'], function (done) {
-  plugins.git.push('origin', 'master')
+  plugins.git.push('origin', 'master', {}, done)
   .end();
 });
 
