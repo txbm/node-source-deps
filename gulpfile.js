@@ -85,10 +85,6 @@ gulp.task('release', ['bump'], function (done) {
   .on('finish', function () {
     plugins.git.tag(pkg.version, rtype + ' release ' + pkg.version, {}, function () {
       done();
-    })
-    .on('end', function () {
-      console.log('donesky');
-      done();
     });
   });
 });
