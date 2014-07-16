@@ -70,17 +70,7 @@ gulp.task('release', function (done) {
     var semver = require('./package.json').version;
     gulp.src('./')
     .pipe(plugins.git.add())
-    .pipe(plugins.git.commit(rtype + ' release: ' + semver))
-    .on('finish', function () {
-      plugins.git.tag(semver, 'release ' + semver, {}, function () {});
-      plugins.git.push('origin', 'master')
-      .on('end', function () {
-        plugins.git.push('origin', 'master', {args: '--tags'})
-        .on('end', done)
-        .end();
-      })
-      .end();
-    });
+    .pipe(plugins.git.commit(rtype + ' release: ' + semver));
   });
 });
 
