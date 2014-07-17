@@ -22,13 +22,11 @@
     return {
       bower: {
         jsonFile: 'bower.json',
-        pkgDir: 'bower_components',
-        defaultMain: './index.js'
+        pkgDir: 'bower_components'
       },
       npm: {
         jsonFile: 'package.json',
-        pkgDir: 'node_modules',
-        defaultMain: './index.js'
+        pkgDir: 'node_modules'
       }
     };
   }
@@ -59,11 +57,15 @@
     pkgList.map(function (pkg) {
       var pkgFile = require(path.join(pkgDir, pkg, pkgrFileName));
       
-      pkgMains[pkg] = overrides[pkg] || pkgFile.main || pkgrDefaultMain;
+      pkgMains[pkg] = overrides[pkg] || pkgFile.main || 'dist/' + pkg + '.min.js';
       pkgMains[pkg] = path.join(pkgDir, pkg, pkgMains[pkg]);
 
       if (!fs.existsSync(pkgMains[pkg])) {
         _log(util.colors.yellow('Package:'), util.colors.green(pkg), util.colors.yellow('has no valid main path. Recommend override.'));
+      }
+
+      if (pkgMains[pkg].indexOf('.min.js') == -1) {
+        _log(util.colors.yellow('Package: '), util.colors.green(pkg), util.colors.yellow('is pulling in a non-minified dist file. Recommend checking to ensure correct file inclusion, may need override...'));
       }
     });
 
