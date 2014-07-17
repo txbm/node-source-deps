@@ -2,7 +2,7 @@
 
 describe('srcdep plugin', function () {
 
-  var srcDeps = require('../src/main.js'),
+  var srcDeps = require('../index.js'),
       gulp = require('gulp'),
       util = require('gulp-util'),
       should = require('should');

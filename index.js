@@ -1,3 +1,3 @@
 'use strict';
 
-module.exports = require('./dist/gulp-srcdeps.js');
+module.exports = require('./src/main.js');
