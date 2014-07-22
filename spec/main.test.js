@@ -3,7 +3,6 @@
 describe('gulp-srcdeps', function () {
 
   var srcDeps = require('../index.js'),
-      util = require('gulp-util'),
       should = require('should');
 
   it('should return a file list', function () {

@@ -4,11 +4,11 @@
   "description": "Fixtures for gulp-srcdeps",
   "main": "index.js",
   "dependencies": {
-    "angular": "*",
-    "angular-mocks": "*",
-    "underscore": "*"
+    "angular": "^1.2.19",
+    "angular-mocks": "^1.2.19",
+    "underscore": "^1.6.0"
   },
   "devDependencies": {
-    "wrench": "^1.5.8"
+    "moment": "^2.7.0"
   }
 }
