@@ -1,37 +1,37 @@
-gulp-srcdeps
+Source Dependencies
 ============
-[![Build Status](http://img.shields.io/travis/petermelias/gulp-srcdeps.svg)](https://coveralls.io/r/petermelias/gulp-srcdeps)
-[![Coverage](http://img.shields.io/coveralls/petermelias/gulp-srcdeps.svg)](https://travis-ci.org/petermelias/gulp-srcdeps)
-[![NPM Downloads](http://img.shields.io/npm/dm/gulp-srcdeps.svg)]()
-[![NPM Version](http://img.shields.io/npm/v/gulp-srcdeps.svg)]()
-[![Github Issues](http://img.shields.io/github/issues/petermelias/gulp-srcdeps.svg)]()
+[![Build Status](http://img.shields.io/travis/petermelias/node-source-deps.svg)](https://coveralls.io/r/petermelias/node-source-deps)
+[![Coverage](http://img.shields.io/coveralls/petermelias/node-source-deps.svg)](https://travis-ci.org/petermelias/node-source-deps)
+[![NPM Downloads](http://img.shields.io/npm/dm/node-source-deps.svg)]()
+[![NPM Version](http://img.shields.io/npm/v/node-source-deps.svg)]()
+[![Github Issues](http://img.shields.io/github/issues/petermelias/node-source-deps.svg)]()
 
-
-A Gulp plugin for automatically discovering and "srcing" your dependency packages from Bower and NPM and any future packagers.
+A tool for automatically discovering and "sourcing" your dependency packages from Bower and NPM and any other packagers.
 
 
 ### Install
 
 ```bash
-npm install --save-dev gulp-srcdeps
+npm install --save-dev source-deps
 ```
 
 
-### Example Usage
+### Example Usage with Gulp
 
 ```javascript
-var deps = require('gulp-srcdeps'),
+var deps = require('source-deps'),
     concat = require('gulp-concat');
 
 gulp.task('bundle', function () {
-  return deps({
+  var depFiles = deps({
     packagers: ['bower', 'npm'],
     includeDevPackages: false,
     logOutput: false,
     overrides: {
       angular: 'lib/angular.min.js'
     }
-  })
+  });
+  gulp.src(depFiles)
   .pipe(concat(['src/**/*.js']))
   .pipe(gulp.dest('all.js'));
 });
@@ -41,13 +41,9 @@ This example pulls in all production dependencies from ```package.json``` and ``
 
 #### Overrides
 
-Overrides tell ```srcdeps``` where to find the main dist file for a library where the ```"main"``` entry in the package file (.json) is not pointed at a compiled dist file (or there is no ```main``` at all).
+Overrides tells it where to find dist files for a library where the automatic guessing is not working.
 
-It is very important that you make sure each dependency package has a valid path to the dist files or else it will not get pulled in.
-
-```srcdeps``` will throw an error if no main file is not found at all, but it cannot tell you if the wrong file gets pulled in. Often node packages point to ```index.js``` as their main file (for use with ```require```) but for many non-frontend-only Node packages, that means this is very often not the minified dist file (which usually resides in ```[dist | lib]/*.min.js)``` which is what ```srcdep``` will try to guess if there is no main and no override. 
-
-In near future ```srcdeps``` will get a better guessing system for installed packages, but currently the best it is going to do is warn you when a package is pulling in a a non-minified file, since that's usually a dead giveaway. Just turn on logging to see which packages probably need overrides.
+It is very important that you make sure each dependency package has correct paths to the dist files.
 
 #### Turning on logging
 ```javascript
@@ -56,3 +52,5 @@ deps({
   logOutput: true
 })
 ```
+
+This will show you how many files get pulled in as well as which packages are likely not being pulled properly.
