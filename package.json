@@ -1,6 +1,6 @@
 {
   "name": "source-deps",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "A gulp plugin for automatically discovering and src'ing dependencies from Bower and NPM.",
   "main": "dist/main.min.js",
   "scripts": {
@@ -11,11 +11,11 @@
     "url": "https://github.com/petermelias/node-source-deps"
   },
   "keywords": [
-    "gulp",
-    "plugin",
-    "src",
+    "source",
     "dependencies",
-    "gulpplugin"
+    "npm",
+    "bower",
+    "auto discover"
   ],
   "author": "Peter M. Elias",
   "license": "MIT",
