@@ -1,2 +1,0 @@
-* Modify the default main lookup functions to employ heuristic guesses before defaulting to something.
-  (implementation of this will start with a directory-wide search for a .min.js file prefixed with the module's name. Followed by a search for a non-minified version failing the prior.)
