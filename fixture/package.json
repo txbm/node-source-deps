@@ -1,0 +1,14 @@
+{
+  "name": "fake-project",
+  "version": "0.0.1",
+  "description": "Fixtures for gulp-srcdeps",
+  "main": "index.js",
+  "dependencies": {
+    "angular": "*",
+    "angular-mocks": "*",
+    "underscore": "*"
+  },
+  "devDependencies": {
+    "wrench": "^1.5.8"
+  }
+}

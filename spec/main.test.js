@@ -1,66 +1,58 @@
 'use strict';
 
-describe('srcdep plugin', function () {
+describe('gulp-srcdeps', function () {
 
   var srcDeps = require('../index.js'),
-      gulp = require('gulp'),
       util = require('gulp-util'),
       should = require('should');
 
-  it('should return a stream', function () {
-    should(util.isStream(srcDeps({
-      packagers: ['npm']
-    }))).be.true;
-  });
-
-  it('should pull in npm packages', function (done) {
-    var deps = [];
-
-    srcDeps({
-      packagers: ['npm']
-    }).on('data', function (file) {
-      deps.push(file);
-    }).on('end', function () {
-      should(deps.length).be.above(0);
-      done();
-    });
-  });
-
-  it('should pull in dev packages', function (done) {
-    var deps = [];
-    
-    srcDeps({
+  it('should return a file list', function () {
+    var files = srcDeps({
       packagers: ['npm'],
+      rootDir: './fixture'
+    });
+
+    should(Object.prototype.toString.call(files)).equal('[object Array]');
+    should(files).length(3);
+  });
+
+  it('should pull in npm packages', function () {
+    var files = srcDeps({
+      packagers: ['npm'],
+      rootDir: './fixture'
+    });
+
+    should(files).length(3);
+  });
+
+  it('should pull in dev packages', function () {
+    var files = srcDeps({
+      packagers: ['npm'],
+      rootDir: './fixture',
       includeDevPackages: true
-    }).on('data', function (file) {
-      deps.push(file);
-    }).on('end', function () {
-      should(deps.length).be.above(0);
-      done();
     });
+
+    should(files).length(4);
   });
 
-  it('should accept override values for main paths', function (done) {
-    var deps = [];
-
-    srcDeps({
+  it('should accept override values for main paths', function () {
+    var files = srcDeps({
       packagers: ['npm'],
-      includeDevPackages: true,
+      rootDir: './fixture',
       overrides: {
-        gulp: './index.js'
+        underscore: './underscore.js'
       }
-    }).on('data', function (file) {
-      deps.push(file);
-    }).on('end', function () {
-      should(deps.length).be.above(0);
-      done();
     });
+
+    should(files).length(4);
   });
+
 
   it('should complain about invalid packagers', function () {
     var badCall = function () {
-          return srcDeps({
-            packagers: ['imaginarium']
+          srcDeps({
+            packagers: ['imaginarium'],
+            rootDir: './fixture'
           });
         };
     
@@ -69,11 +61,23 @@ describe('srcdep plugin', function () {
 
   it('should complain about missing json files for a given packager', function () {
     var badCall = function () {
-          return srcDeps({
+          srcDeps({
             packagers: ['bower']
           });
         };
 
     should(badCall).throw();
+  });
+  
+  it('should deal with multiple dist files per package', function () {
+    var files = srcDeps({
+      packagers: ['npm'],
+      rootDir: './fixture',
+      overrides: {
+        underscore: ['./some-random.js', './underscore-min.js']
+      }
+    });
+
+    should(files).length(5);
   });
 });

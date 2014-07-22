@@ -1,8 +1,8 @@
 (function () {
   'use strict';
 
-  var gulp = require('gulp'),
-      util = require('gulp-util'),
+  var util = require('gulp-util'),
+      wrench = require('wrench'),
       path = require('path'),
       fs = require('fs'),
       _log = function () {
@@ -35,6 +35,10 @@
     return new util.PluginError('gulp-srcdeps', message);
   }
 
+  function _isArray(obj) {
+    return Object.prototype.toString.call(obj) === '[object Array]';
+  }
+
   function _pullDependencies(jsonFile, includeDev) {
     var deps = jsonFile.dependencies || {},
         pkgList = [],
@@ -51,31 +55,68 @@
     return pkgList;
   }
 
-  function _resolveMains(pkgList, pkgDir, pkgrFileName, pkgrDefaultMain, overrides) {
-    var pkgMains = {};
+  function _guessDistFiles(pkgDir, pkg) {
+    var testPatterns = [
+          new RegExp(pkg + '.min.js$'),
+          new RegExp(pkg + '.js$')
+        ],
+        matches = [],
+        files = wrench.readdirSyncRecursive(path.join(pkgDir, pkg));
 
-    pkgList.map(function (pkg) {
-      var pkgFile = require(path.join(pkgDir, pkg, pkgrFileName));
-      
-      pkgMains[pkg] = overrides[pkg] || pkgFile.main || 'dist/' + pkg + '.min.js';
-      pkgMains[pkg] = path.join(pkgDir, pkg, pkgMains[pkg]);
-
-      if (!fs.existsSync(pkgMains[pkg])) {
-        _log(util.colors.yellow('Package:'), util.colors.green(pkg), util.colors.yellow('has no valid main path. Recommend override.'));
-      }
-
-      if (pkgMains[pkg].indexOf('.min.js') == -1) {
-        _log(util.colors.yellow('Package: '), util.colors.green(pkg), util.colors.yellow('is pulling in a non-minified dist file. Recommend checking to ensure correct file inclusion, may need override...'));
-      }
+    files.forEach(function (filename, idx1, arr1) {
+      testPatterns.forEach(function (pattern, idx2, arr2) {
+        if (filename.match(pattern)) {
+          matches[idx2] = filename;
+        }
+      });
     });
 
-    return pkgMains;
+    return matches.filter(function (m) { return typeof(m) !== 'undefined'; }).shift();
+  }
+
+  function _resolveMains(pkgList, pkgDir, pkgrFileName, pkgrDefaultMain, overrides, done) {
+    var _check = function (p, pkg) {
+          if (!fs.existsSync(p)) {
+            _log(util.colors.yellow('Package:'), util.colors.green(pkg), util.colors.yellow('File at:'), util.colors.red(p), util.colors.yellow('does not exist, recommend override.'));
+            return false;
+          }
+          return true;
+        },
+        _expand = function (p, pkg) {
+          p = path.resolve(pkgDir, pkg, p);
+          _check(p, pkg);
+          return p;
+        },
+        _process = function (pkg) {
+          var filepaths = overrides[pkg] || _guessDistFiles(pkgDir, pkg),
+              _temp = [];
+
+          if (!filepaths) {
+            _log(util.colors.yellow('Package:', util.colors.green(pkg), util.colors.yellow('has no valid paths, recommend override.')));
+          }
+
+          if (_isArray(filepaths)) {
+            filepaths.forEach(function (element, idx, arr) {
+              arr[idx] = _expand(element, pkg);
+            });
+          } else {
+            filepaths = _expand(filepaths, pkg);
+          }
+
+          return filepaths;
+        },
+        paths = {};
+
+    pkgList.forEach(function (element, idx, arr) {
+      paths[element] = _process(element);
+    });
+
+    return paths;
   }
 
   function _scanPkgr(pkgr, opts) {
     var pkgrEntry = _packagers()[pkgr],
         pkgList = [],
-        mains = {},
         jsonPath,
         pkgDirPath;
     
@@ -83,22 +124,27 @@
       throw _error('Packager "' + pkgr + '" not supported.');
     }
 
-    jsonPath = path.join(process.cwd(), pkgrEntry.jsonFile);
+    jsonPath = path.join(opts.rootDir, pkgrEntry.jsonFile);
 
     if (!fs.existsSync(jsonPath)) {
       throw _error('Packager "' + pkgr + '" missing JSON file "' + pkgrEntry.jsonFile + '". (' + jsonPath + ')');
     }
 
-    pkgDirPath = path.join(process.cwd(), pkgrEntry.pkgDir);
+    pkgDirPath = path.join(opts.rootDir, pkgrEntry.pkgDir);
 
     if (!fs.existsSync(pkgDirPath)) {
       throw _error('Packager "' + pkgr + '" missing package directory "' + pkgrEntry.pkgDir + '". (' + pkgDirPath + ')');
     }
 
     pkgList = _pullDependencies(require(jsonPath), opts.includeDevPackages);
-    mains = _resolveMains(pkgList, pkgDirPath, pkgrEntry.jsonFile, pkgrEntry.defaultMain, opts.overrides);
-
-    return mains;
+    
+    return _resolveMains(
+      pkgList,
+      pkgDirPath,
+      pkgrEntry.jsonFile,
+      pkgrEntry.defaultMain,
+      opts.overrides
+    );
   }
 
   module.exports = function (opts) {
@@ -106,32 +152,40 @@
           packagers: ['npm', 'bower'],
           overrides: {},
           includeDevPackages: false,
-          logOutput: false
+          logOutput: false,
+          rootDir: process.cwd()
         },
-        allDeps = {},
         pathList = [],
+        mains = {},
         currentPkg,
         currentPath;
 
     opts = _mergeObjects(settings, opts);
+    opts.rootDir = path.resolve(opts.rootDir);
 
     if (!opts.logOutput) {
       _log = function () {};
     }
 
-    opts.packagers.map(function (pkgr) {
-      allDeps = _mergeObjects(allDeps, _scanPkgr(pkgr, opts));
+    opts.packagers.forEach(function (element, idx, array) {
+      mains = _mergeObjects(mains, _scanPkgr(element, opts));
     });
+    
+    for (currentPkg in mains) {
+      currentPath = mains[currentPkg];
+      if (!currentPath) {
+        continue;
+      }
 
-    for (currentPkg in allDeps) {
-      currentPath = allDeps[currentPkg];
-      if (currentPath) {
-        pathList.push(currentPath);  
+      if (_isArray(currentPath)) {
+        pathList = pathList.concat(currentPath);
+      } else{
+        pathList.push(currentPath);
       }
     }
+    
+    _log('srcdep pulling in ' + pathList.length + ' dependant files.');
 
-    _log('srcdep pulling in ' + pathList.length + ' dependencies...');
-
-    return gulp.src(pathList);
+    return pathList;
   };
 })();
