@@ -2,8 +2,8 @@ Source Dependencies
 ============
 [![Build Status](http://img.shields.io/travis/petermelias/node-source-deps.svg)](https://travis-ci.org/petermelias/node-source-deps)
 [![Coverage](http://img.shields.io/coveralls/petermelias/node-source-deps.svg)](https://coveralls.io/r/petermelias/node-source-deps)
-[![NPM Downloads](http://img.shields.io/npm/dm/node-source-deps.svg)]()
-[![NPM Version](http://img.shields.io/npm/v/node-source-deps.svg)]()
+[![NPM Downloads](http://img.shields.io/npm/dm/source-deps.svg)]()
+[![NPM Version](http://img.shields.io/npm/v/source-deps.svg)]()
 [![Github Issues](http://img.shields.io/github/issues/petermelias/node-source-deps.svg)]()
 
 A tool for automatically discovering and "sourcing" your dependency packages from Bower and NPM and any other packagers.
