@@ -54,3 +54,21 @@ deps({
 ```
 
 This will show you how many files get pulled in as well as which packages are likely not being pulled properly.
+
+#### Order
+
+As of `0.2.5` you can control the ordering of your dependant files now! Very helpful, like so.
+
+```javascript
+var deps = require('source-deps'),
+    depFiles = deps({
+      packagers: ['bower'],
+      order: [
+        'angular',
+        'angular-mocks',
+        'angular-animate'
+      ]
+    });
+```
+
+This will happily prevent your dependencies from being loaded out of proper resolution order :)
