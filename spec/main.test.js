@@ -79,4 +79,19 @@ describe('gulp-srcdeps', function () {
 
     should(files).length(5);
   });
+
+  it('should allow the specification of a particular load order', function () {
+    var files = srcDeps({
+      packagers: ['npm'],
+      rootDir: './fixture',
+      order: [
+        'underscore',
+        'moment',
+        'angular-mocks',
+        'angular'
+      ]
+    });
+
+    should(files[3]).endWith('angular.min.js');
+  });
 });

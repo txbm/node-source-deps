@@ -148,7 +148,8 @@
           overrides: {},
           includeDevPackages: false,
           logOutput: false,
-          rootDir: process.cwd()
+          rootDir: process.cwd(),
+          order: []
         },
         pathList = [],
         mains = {},
@@ -174,7 +175,9 @@
 
       if (_isArray(currentPath)) {
         pathList = pathList.concat(currentPath);
-      } else{
+      } else if (opts.order.indexOf(currentPkg) > -1) {
+        pathList[opts.order.indexOf(currentPkg)] = currentPath;
+      } else {
         pathList.push(currentPath);
       }
     }
