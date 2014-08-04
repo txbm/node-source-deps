@@ -94,4 +94,16 @@ describe('gulp-srcdeps', function () {
 
     should(files[3]).endWith('angular.min.js');
   });
+
+  it('should ignore packages that you want to ignore', function () {
+    var files = srcDeps({
+          packagers: ['npm'],
+          rootDir: './fixture',
+          ignore: [
+            'underscore'
+          ]
+        });
+
+    should(files).length(3);
+  });
 });

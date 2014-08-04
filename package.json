@@ -1,6 +1,6 @@
 {
   "name": "source-deps",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "A gulp plugin for automatically discovering and src'ing dependencies from Bower and NPM.",
   "main": "dist/main.min.js",
   "scripts": {

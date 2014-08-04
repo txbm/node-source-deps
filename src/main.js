@@ -88,9 +88,7 @@
 
           if (!filepaths) {
             _log('Package "' + pkg + '" has no valid paths. Recommend override.');
-          }
-
-          if (_isArray(filepaths)) {
+          } else if (_isArray(filepaths)) {
             filepaths.forEach(function (element, idx, arr) {
               arr[idx] = _expand(element, pkg);
             });
@@ -149,12 +147,14 @@
           includeDevPackages: false,
           logOutput: false,
           rootDir: process.cwd(),
-          order: []
+          order: [],
+          ignore: []
         },
         pathList = [],
         mains = {},
         currentPkg,
-        currentPath;
+        currentPath,
+        currentIdx;
 
     opts = _mergeObjects(settings, opts);
     opts.rootDir = path.resolve(opts.rootDir);
@@ -168,21 +168,34 @@
     });
     
     for (currentPkg in mains) {
+      if (opts.ignore.indexOf(currentPkg) > -1) {
+        continue;
+      }
+
       currentPath = mains[currentPkg];
+      
       if (!currentPath) {
         continue;
       }
 
-      if (_isArray(currentPath)) {
-        pathList = pathList.concat(currentPath);
-      } else if (opts.order.indexOf(currentPkg) > -1) {
-        pathList[opts.order.indexOf(currentPkg)] = currentPath;
+      currentIdx = opts.order.indexOf(currentPkg);
+
+      if (currentIdx > -1) {
+        if (_isArray(currentPath)) {
+          pathList.splice(currentIdx, 0, currentPath);
+        } else {
+          pathList[currentIdx] = currentPath;
+        }
       } else {
-        pathList.push(currentPath);
+        if (_isArray(currentPath)) {
+          pathList = pathList.concat(currentPath);
+        } else {
+          pathList.push(currentPath);
+        }
       }
     }
     
-    _log('Found ' + pathList.length + ' dependant files.');
+    _log('Found ' + pathList.length + ' dependent files.');
 
     return pathList;
   };
