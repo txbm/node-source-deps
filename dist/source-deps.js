@@ -169,27 +169,34 @@
     
     for (currentPkg in mains) {
       if (opts.ignore.indexOf(currentPkg) > -1) {
+        _log('Ignoring: ' + currentPkg);
         continue;
       }
 
       currentPath = mains[currentPkg];
       
       if (!currentPath) {
+        _log('Path for ' + currentPkg + ' is empty. (' + currentPath + ')');
         continue;
       }
 
       currentIdx = opts.order.indexOf(currentPkg);
 
       if (currentIdx > -1) {
+        _log('Ordering: ' + currentPkg);
         if (_isArray(currentPath)) {
+          _log('Expanding: ' + currentPkg + ' with files (' + currentPath + ')');
           Array.prototype.splice.apply(pathList, [currentIdx, 0].concat(currentPath));
         } else {
+          _log('Inserting: ' + currentPkg + ' with path (' + currentPath + ')');
           pathList[currentIdx] = currentPath;
         }
       } else {
         if (_isArray(currentPath)) {
+          _log('Concatenating: ' + currentPkg + ' with path (' + currentPath + ')');
           pathList = pathList.concat(currentPath);
         } else {
+          _log('Pushing: ' + currentPkg + ' with path (' + currentPath + ')');
           pathList.push(currentPath);
         }
       }
