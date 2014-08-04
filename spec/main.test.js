@@ -7,9 +7,9 @@ describe('gulp-srcdeps', function () {
 
   it('should return a file list', function () {
     var files = srcDeps({
-      packagers: ['npm'],
-      rootDir: './fixture'
-    });
+          packagers: ['npm'],
+          rootDir: './fixture'
+        });
 
     should(Object.prototype.toString.call(files)).equal('[object Array]');
     should(files).length(3);
@@ -17,31 +17,31 @@ describe('gulp-srcdeps', function () {
 
   it('should pull in npm packages', function () {
     var files = srcDeps({
-      packagers: ['npm'],
-      rootDir: './fixture'
-    });
+          packagers: ['npm'],
+          rootDir: './fixture'
+        });
 
     should(files).length(3);
   });
 
   it('should pull in dev packages', function () {
     var files = srcDeps({
-      packagers: ['npm'],
-      rootDir: './fixture',
-      includeDevPackages: true
-    });
+          packagers: ['npm'],
+          rootDir: './fixture',
+          includeDevPackages: true
+        });
 
     should(files).length(4);
   });
 
   it('should accept override values for main paths', function () {
     var files = srcDeps({
-      packagers: ['npm'],
-      rootDir: './fixture',
-      overrides: {
-        underscore: './underscore.js'
-      }
-    });
+          packagers: ['npm'],
+          rootDir: './fixture',
+          overrides: {
+            underscore: './underscore.js'
+          }
+        });
 
     should(files).length(4);
   });
@@ -70,27 +70,27 @@ describe('gulp-srcdeps', function () {
   
   it('should deal with multiple dist files per package', function () {
     var files = srcDeps({
-      packagers: ['npm'],
-      rootDir: './fixture',
-      overrides: {
-        underscore: ['./some-random.js', './underscore-min.js']
-      }
-    });
+          packagers: ['npm'],
+          rootDir: './fixture',
+          overrides: {
+            underscore: ['./some-random.js', './underscore-min.js']
+          }
+        });
 
     should(files).length(5);
   });
 
   it('should allow the specification of a particular load order', function () {
     var files = srcDeps({
-      packagers: ['npm'],
-      rootDir: './fixture',
-      order: [
-        'underscore',
-        'moment',
-        'angular-mocks',
-        'angular'
-      ]
-    });
+          packagers: ['npm'],
+          rootDir: './fixture',
+          order: [
+            'underscore',
+            'moment',
+            'angular-mocks',
+            'angular'
+          ]
+        });
 
     should(files[3]).endWith('angular.min.js');
   });
@@ -105,5 +105,35 @@ describe('gulp-srcdeps', function () {
         });
 
     should(files).length(3);
+  });
+
+  it('should order packages with multiple files', function () {
+    var files = srcDeps({
+          packagers: ['npm'],
+          rootDir: './fixture',
+          overrides: {
+            underscore: ['./some-random.js', './underscore-min.js']
+          },
+          order: [
+            'underscore'
+          ]
+        }),
+        files2 = srcDeps({
+          packagers: ['npm'],
+          rootDir: './fixture',
+          overrides: {
+            underscore: ['./some-random.js', './underscore-min.js']
+          },
+          order: [
+            'angular',
+            'underscore'
+          ]
+        });
+
+    should(files[0]).endWith('some-random.js');
+    should(files[1]).endWith('underscore-min.js');
+
+    should(files2[1]).endWith('some-random.js');
+    should(files2[2]).endWith('underscore-min.js');
   });
 });

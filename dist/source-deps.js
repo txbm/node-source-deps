@@ -182,7 +182,7 @@
 
       if (currentIdx > -1) {
         if (_isArray(currentPath)) {
-          pathList.splice(currentIdx, 0, currentPath);
+          Array.prototype.splice.apply(pathList, [currentIdx, 0].concat(currentPath));
         } else {
           pathList[currentIdx] = currentPath;
         }
