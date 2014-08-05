@@ -86,14 +86,12 @@ describe('gulp-srcdeps', function () {
           rootDir: './fixture',
           order: [
             'underscore',
-            'moment',
-            'angular-mocks',
-            'angular'
+            'angular',
+            'angular-mocks'
           ]
         });
 
-    console.log(files);
-    //should(files[3]).endWith('angular.min.js');
+    should(files[2]).endWith('angular-mocks.js');
   });
 
   it('should ignore packages that you want to ignore', function () {

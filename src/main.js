@@ -183,7 +183,11 @@
       currentIdx = opts.order.indexOf(currentPkg);
 
       if (currentIdx > -1) {
-        Array.prototype.splice.apply(pathList, [currentIdx, 0].concat(currentPath));
+        if (typeof(pathList[currentIdx]) == 'undefined') {
+          pathList[currentIdx] = currentPath;
+        } else {
+          Array.prototype.splice.apply(pathList, [currentIdx, 0].concat(currentPath));  
+        }
       } else {
         if (_isArray(currentPath)) {
           pathList = pathList.concat(currentPath);
