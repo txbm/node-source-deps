@@ -8,7 +8,7 @@
         console.log.apply(this, arguments);
       };
 
-  function _mergeObjects(o1, o2) {
+  function _mergeObjects (o1, o2) {
     var k, v;
     for (k in o2) {
       v = o2[k];
@@ -17,7 +17,7 @@
     return o1;
   }
 
-  function _packagers() {
+  function _packagers () {
     return {
       bower: {
         jsonFile: 'bower.json',
@@ -30,11 +30,11 @@
     };
   }
 
-  function _isArray(obj) {
+  function _isArray (obj) {
     return Object.prototype.toString.call(obj) === '[object Array]';
   }
 
-  function _pullDependencies(jsonFile, includeDev) {
+  function _pullDependencies (jsonFile, includeDev) {
     var deps = jsonFile.dependencies || {},
         pkgList = [],
         current;
@@ -50,7 +50,7 @@
     return pkgList;
   }
 
-  function _guessDistFiles(pkgDir, pkg) {
+  function _guessDistFiles (pkgDir, pkg) {
     var testPatterns = [
           new RegExp(pkg + '.min.js$'),
           new RegExp(pkg + '.js$')
@@ -69,7 +69,7 @@
     return matches.filter(function (m) { return typeof(m) !== 'undefined'; }).shift();
   }
 
-  function _resolveMains(pkgList, pkgDir, pkgrFileName, pkgrDefaultMain, overrides, done) {
+  function _resolveMains (pkgList, pkgDir, pkgrFileName, pkgrDefaultMain, overrides, done) {
     var _check = function (p, pkg) {
           if (!fs.existsSync(p)) {
             _log('Package ( ' + pkg + ' ) file at ' + p + ' does not exist.');
@@ -107,7 +107,7 @@
     return paths;
   }
 
-  function _scanPkgr(pkgr, opts) {
+  function _scanPkgr (pkgr, opts) {
     var pkgrEntry = _packagers()[pkgr],
         pkgList = [],
         jsonPath,
@@ -152,9 +152,32 @@
         },
         pathList = [],
         mains = {},
-        currentPkg,
-        currentPath,
-        currentIdx;
+        addPkg = function (pkg, idx) {
+          var path;
+          
+          if (opts.ignore.indexOf(pkg) > -1) {
+            _log('Ignoring: ' + currentPkg);
+            return;
+          }
+
+          path = mains[pkg];
+          if (!path) {
+            _log('Path for ' + pkg + ' is empty, skipping.');
+            return;
+          }
+
+          if (idx) {
+            Array.prototype.splice.apply(pathList, [idx, 0].concat(path));
+            return;
+          }
+
+          if (_isArray(path)) {
+            pathList = pathList.concat(path);
+            return;
+          }
+          pathList.push(path);
+        },
+        currentPkg;
 
     opts = _mergeObjects(settings, opts);
     opts.rootDir = path.resolve(opts.rootDir);
@@ -167,34 +190,13 @@
       mains = _mergeObjects(mains, _scanPkgr(element, opts));
     });
     
+    opts.order.forEach(function (pkg, idx, array) {
+      addPkg(pkg, idx);
+      delete mains[pkg];
+    });
+
     for (currentPkg in mains) {
-      if (opts.ignore.indexOf(currentPkg) > -1) {
-        _log('Ignoring: ' + currentPkg);
-        continue;
-      }
-
-      currentPath = mains[currentPkg];
-      
-      if (!currentPath) {
-        _log('Path for ' + currentPkg + ' is empty, skipping.');
-        continue;
-      }
-
-      currentIdx = opts.order.indexOf(currentPkg);
-
-      if (currentIdx > -1) {
-        if (typeof(pathList[currentIdx]) == 'undefined') {
-          pathList[currentIdx] = currentPath;
-        } else {
-          Array.prototype.splice.apply(pathList, [currentIdx, 0].concat(currentPath));  
-        }
-      } else {
-        if (_isArray(currentPath)) {
-          pathList = pathList.concat(currentPath);
-        } else {
-          pathList.push(currentPath);
-        }
-      }
+      addPkg(currentPkg);
     }
     
     _log('Found ' + pathList.length + ' dependent files.');
