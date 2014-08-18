@@ -4,9 +4,18 @@
   var wrench = require('wrench'),
       path = require('path'),
       fs = require('fs'),
+      colors = require('colors'),
       _log = function () {
+        arguments[0] = '[' + colors.grey('SOURCE DEPS') + '] ' + arguments[0];
         console.log.apply(this, arguments);
       };
+
+  colors.setTheme({
+    info: 'cyan',
+    warn: 'yellow',
+    error: 'red',
+    success: 'green'
+  });
 
   function _mergeObjects (o1, o2) {
     var k, v;
@@ -34,17 +43,21 @@
     return Object.prototype.toString.call(obj) === '[object Array]';
   }
 
-  function _pullDependencies (jsonFile, includeDev) {
+  function _pullDependencies (jsonFile, opts) {
     var deps = jsonFile.dependencies || {},
         pkgList = [],
         current;
 
-    if (includeDev) {
+    if (opts.includeDevPackages) {
       deps = _mergeObjects(deps, jsonFile.devDependencies || {});
     }
     
     for (current in deps) {
-      pkgList.push(current);
+      if (opts.ignore.indexOf(current) == -1) {
+        pkgList.push(current);
+      } else {
+        _log('Ignoring '.success + colors.info(current));
+      }
     }
     
     return pkgList;
@@ -72,28 +85,34 @@
   function _resolveMains (pkgList, pkgDir, pkgrFileName, pkgrDefaultMain, overrides, done) {
     var _check = function (p, pkg) {
           if (!fs.existsSync(p)) {
-            _log('Package ( ' + pkg + ' ) file at ' + p + ' does not exist.');
+            _log('Package '.warn + colors.info(pkg) + ' file at '.warn + colors.info(p) + ' does not exist.'.warn);
             return false;
           }
           return true;
         },
         _expand = function (p, pkg) {
           p = path.resolve(pkgDir, pkg, p);
-          _check(p, pkg);
           return p;
         },
         _process = function (pkg) {
           var filepaths = overrides[pkg] || _guessDistFiles(pkgDir, pkg),
-              _temp = [];
+              _processPath = function (path) {
+                path = _expand(path, pkg);
+                if (_check(path, pkg)) {
+                  return path;
+                }
+                return false;
+              };
 
-          if (!filepaths) {
-            _log('Package "' + pkg + '" has no valid paths. Recommend override.');
-          } else if (_isArray(filepaths)) {
-            filepaths.forEach(function (element, idx, arr) {
-              arr[idx] = _expand(element, pkg);
-            });
-          } else {
-            filepaths = _expand(filepaths, pkg);
+          if (_isArray(filepaths)) {
+            filepaths = filepaths.map(_processPath).filter(function (path) { return !!path; });
+          } else if (filepaths) {
+            filepaths = _processPath(filepaths);
+          }
+
+          if (!filepaths || (_isArray(filepaths) && filepaths.length === 0)) {
+            _log('Package '.warn + colors.info(pkg) + ' has no valid paths. Recommend override.'.warn);
+            filepaths = undefined;
           }
 
           return filepaths;
@@ -101,6 +120,9 @@
         paths = {};
 
     pkgList.forEach(function (element, idx, arr) {
+      if (paths.hasOwnProperty(element)) {
+        return;
+      }
       paths[element] = _process(element);
     });
 
@@ -110,34 +132,57 @@
   function _scanPkgr (pkgr, opts) {
     var pkgrEntry = _packagers()[pkgr],
         pkgList = [],
+        resolved = {},
         jsonPath,
         pkgDirPath;
     
     if (!pkgrEntry) {
-      throw new Error('Packager "' + pkgr + '" not supported.');
+      throw new Error('Packager '.error + colors.info(pkgr) + ' not supported.'.error);
     }
 
     jsonPath = path.join(opts.rootDir, pkgrEntry.jsonFile);
 
     if (!fs.existsSync(jsonPath)) {
-      throw new Error('Packager "' + pkgr + '" missing JSON file "' + pkgrEntry.jsonFile + '". (' + jsonPath + ')');
+      throw new Error('Packager '.error + colors.info(pkgr) + ' missing JSON file '.error + colors.info(pkgrEntry.jsonFile) + ' @ '.error + colors.info(jsonPath));
     }
 
     pkgDirPath = path.join(opts.rootDir, pkgrEntry.pkgDir);
 
     if (!fs.existsSync(pkgDirPath)) {
-      throw new Error('Packager "' + pkgr + '" missing package directory "' + pkgrEntry.pkgDir + '". (' + pkgDirPath + ')');
+      throw new Error('Packager '.error + colors.info(pkgr) + ' missing package directory '.error + colors.info(pkgrEntry.pkgDir) + ' @ '.error + colors.info(pkgDirPath));
     }
 
-    pkgList = _pullDependencies(require(jsonPath), opts.includeDevPackages);
-    
-    return _resolveMains(
+    pkgList = _pullDependencies(require(jsonPath), opts);
+
+    if (opts.include) {
+      pkgList = pkgList.concat(opts.include);
+    }
+
+    if (opts.secondaryDeps) {
+      (function (pkgList, entry, opts) {
+        var pLen = pkgList.length,
+            pCur,
+            jPath,
+            secDeps;
+
+        while (pLen--) {
+          pCur = pkgList[pLen];
+          jPath = path.join(opts.rootDir, entry.pkgDir, pCur, entry.jsonFile);
+          secDeps = _pullDependencies(require(jPath), opts);
+          Array.prototype.splice.apply(pkgList, [pLen, 0].concat(secDeps));
+        }
+      })(pkgList, pkgrEntry, opts);
+    }
+
+    resolved = _resolveMains(
       pkgList,
       pkgDirPath,
       pkgrEntry.jsonFile,
       pkgrEntry.defaultMain,
       opts.overrides
     );
+
+    return resolved;
   }
 
   module.exports = function (opts) {
@@ -145,24 +190,20 @@
           packagers: ['npm', 'bower'],
           overrides: {},
           includeDevPackages: false,
+          secondaryDeps: false,
           logOutput: false,
           rootDir: process.cwd(),
           order: [],
-          ignore: []
+          ignore: [],
+          include: []
         },
         pathList = [],
         mains = {},
         addPkg = function (pkg, idx) {
           var path;
-          
-          if (opts.ignore.indexOf(pkg) > -1) {
-            _log('Ignoring: ' + currentPkg);
-            return;
-          }
 
           path = mains[pkg];
           if (!path) {
-            _log('Path for ' + pkg + ' is empty, skipping.');
             return;
           }
 
@@ -199,7 +240,7 @@
       addPkg(currentPkg);
     }
     
-    _log('Found ' + pathList.length + ' dependent files.');
+    _log('Loaded '.success + colors.info(pathList.length) + ' dependent files.'.success);
 
     return pathList;
   };

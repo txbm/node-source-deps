@@ -29,7 +29,16 @@ gulp.task('bundle', function () {
     logOutput: false,
     overrides: {
       angular: 'lib/angular.min.js'
-    }
+    },
+    ignore: ['normalize.css'],
+    order: [
+      'angular',
+      'angular-mocks'
+    ],
+    include: [
+      'some-package-apparently-not-listed-as-dependency'
+    ],
+    secondaryDeps: true // Pull in dependencies of dependencies (in proper order too :)
   });
   gulp.src(depFiles)
   .pipe(concat(['src/**/*.js']))
@@ -72,3 +81,62 @@ var deps = require('source-deps'),
 ```
 
 This will happily prevent your dependencies from being loaded out of proper resolution order :)
+
+#### Ignore
+
+And now you can ignore certain packages by just adding them to the `ignore` option like so:
+
+```javascript
+
+var deps = require('source-deps'),
+    depFiles = deps({
+      packagers: ['bower'],
+      order: [
+        'angular',
+        'angular-mocks'
+      ],
+      ignore: [
+        'angular-animate'
+      ]
+    });
+```
+
+#### Include
+
+This is for a number of odd situations where there is a package present that is either:
+
+A) Not listed as a dependency
+
+B) Ignored already
+
+C) Ignored by a future feature that allows for exclusion patterns
+
+... and needs to be included anyway. In other words it overrides any exclusions.
+
+```javascript
+
+depFiles = deps({
+  packagers: ['bower'],
+  ignore: ['said-package'],
+  include: ['said-package'] // Takes priority
+});
+
+```
+
+#### Secondary Deps
+
+See this is cool because if used correctly you don't need to shim RequireJS for frontend code...
+
+```javascript
+
+depFiles = deps({
+  packagers: ['bower'],
+  secondaryDeps: true
+});
+```
+
+- Pulls in all dependencies-of-dependencies
+- Ignores duplicate occurences of dependencies (i.e. won't pull in JQuery 900 times ;)
+- Respects `order`, `ignore`, and `include`.
+- By default will load dependencies BEFORE the package that pulled them in, usually resulting in resolution order being met correctly.
+- Use `order` to resolve anything that pulls in too early / too late as a result of overlapping secondaries amongst packages.

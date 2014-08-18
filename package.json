@@ -1,6 +1,6 @@
 {
   "name": "source-deps",
-  "version": "0.2.11",
+  "version": "0.2.12",
   "description": "A gulp plugin for automatically discovering and src'ing dependencies from Bower and NPM.",
   "main": "dist/main.min.js",
   "scripts": {
@@ -29,6 +29,7 @@
     "gulp-concat": "^2.3.3",
     "gulp-coveralls": "^0.1.2",
     "gulp-git": "^0.4.3",
+    "gulp-help": "^0.1.11",
     "gulp-istanbul": "^0.2.0",
     "gulp-jshint": "^1.7.1",
     "gulp-load-plugins": "^0.5.3",
@@ -42,6 +43,7 @@
     "yargs": "^1.2.6"
   },
   "dependencies": {
+    "colors": "^0.6.2",
     "wrench": "^1.5.8"
   }
 }

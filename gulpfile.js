@@ -5,12 +5,15 @@ var gulp = require('gulp'),
     yargs = require('yargs'),
     pkg = require('./package.json');
 
+
+require('gulp-help')(gulp);
+
 function _reloadPkgFile() {
   delete require.cache[require.resolve('./package.json')];
   pkg = require('./package.json');
 }
 
-gulp.task('test', ['jshint'], function (done) {
+gulp.task('test', 'Runs all test', ['jshint'], function (done) {
   gulp.src(['src/*', 'spec/*'])
   .pipe(plugins.istanbul())
   .on('finish', function () {
@@ -21,33 +24,33 @@ gulp.task('test', ['jshint'], function (done) {
   });
 });
 
-gulp.task('ci', ['build'], function (done) {
+gulp.task('ci', 'Submits coverage info to Coveralls', ['build'], function (done) {
   gulp.src('coverage/lcov.info')
   .pipe(plugins.coveralls())
   .on('finish', done);
 });
 
-gulp.task('jshint', function (done) {
+gulp.task('jshint', 'JSHints the source', function (done) {
   gulp.src('src/*')
   .pipe(plugins.jshint())
   .pipe(plugins.jshint.reporter('default'))
   .on('finish', done);
 });
 
-gulp.task('size', ['build'], function (done) {
+gulp.task('size', 'Calculates the built and minified size of the src', ['build'], function (done) {
   gulp.src('dist/*.min.js')
   .pipe(plugins.size())
   .on('finish', done);
 });
 
-gulp.task('commit', ['build'], function (done) {
+gulp.task('commit', 'Builds and commits the repo', ['build'], function (done) {
   gulp.src('./')
   .pipe(plugins.git.add())
   .pipe(plugins.git.commit(yargs.argv.m || 'automatic commit by gulp task'))
   .on('finish', done);
 });
 
-gulp.task('build', ['test'], function (done) {
+gulp.task('build', 'Tests and builds the repo', ['test'], function (done) {
   gulp.src('src/*.js')
   .pipe(plugins.sourcemaps.init())
   .pipe(plugins.concat(pkg.name + '.js'))
@@ -65,7 +68,7 @@ gulp.task('build', ['test'], function (done) {
 });
 
 // MAJOR, MINOR, PATCH, PRERELEASE
-gulp.task('bump', ['build'], function (done) {
+gulp.task('bump', 'Builds and bumps the version according to the -b switch [MAJOR, MINOR, PATCH, PRERELEASE]', ['build'], function (done) {
   var rtype = yargs.argv.b || 'patch';
   
   gulp.src('./package.json')
@@ -74,7 +77,7 @@ gulp.task('bump', ['build'], function (done) {
   .on('finish', done);
 });
 
-gulp.task('release', ['bump'], function (done) {
+gulp.task('release', 'Releases according to -b switch', ['bump'], function (done) {
   var rtype = yargs.argv.b || 'patch';
   
   _reloadPkgFile();
@@ -89,19 +92,19 @@ gulp.task('release', ['bump'], function (done) {
   });
 });
 
-gulp.task('push', ['commit'], function (done) {
+gulp.task('push', 'Commits and pushes the repo', ['commit'], function (done) {
   plugins.git.push('origin', 'master')
   .on('finish', done)
   .end();
 });
 
-gulp.task('push-release', ['release'], function (done) {
+gulp.task('push-release', 'Releases and pushes', ['release'], function (done) {
   plugins.git.push('origin', 'master', {args: '--tags'})
   .on('finish', done)
   .end();
 });
 
-gulp.task('publish', ['push-release'], function (done) {
+gulp.task('publish', 'Releases, pushes and publishes to NPM', ['push-release'], function (done) {
   require('child_process').spawn('npm', ['publish'], {stdio: 'inherit'})
   .on('close', done);
 });

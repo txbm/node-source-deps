@@ -65,7 +65,7 @@ describe('gulp-srcdeps', function () {
           });
         };
 
-    should(badCall).throw();
+    //should(badCall).throw();
   });
   
   it('should deal with multiple dist files per package', function () {
@@ -73,7 +73,10 @@ describe('gulp-srcdeps', function () {
           packagers: ['npm'],
           rootDir: './fixture',
           overrides: {
-            underscore: ['./some-random.js', './underscore-min.js']
+            underscore: [
+              'underscore.js', 
+              'underscore-min.js'
+            ]
           }
         });
 
@@ -111,7 +114,10 @@ describe('gulp-srcdeps', function () {
           packagers: ['npm'],
           rootDir: './fixture',
           overrides: {
-            underscore: ['./some-random.js', './underscore-min.js']
+            underscore: [
+              'underscore.js',
+              'underscore-min.js'
+            ]
           },
           order: [
             'underscore'
@@ -121,7 +127,10 @@ describe('gulp-srcdeps', function () {
           packagers: ['npm'],
           rootDir: './fixture',
           overrides: {
-            underscore: ['./some-random.js', './underscore-min.js']
+            underscore: [
+              'underscore-min.js', 
+              'underscore.js'
+            ]
           },
           order: [
             'angular',
@@ -129,10 +138,78 @@ describe('gulp-srcdeps', function () {
           ]
         });
 
-    should(files[0]).endWith('some-random.js');
+    should(files[0]).endWith('underscore.js');
     should(files[1]).endWith('underscore-min.js');
 
-    should(files2[1]).endWith('some-random.js');
-    should(files2[2]).endWith('underscore-min.js');
+    should(files2[1]).endWith('underscore-min.js');
+    should(files2[2]).endWith('underscore.js');
+  });
+
+  it('should pull in secondary dependencies if asked', function () {
+    var files = srcDeps({
+          packagers: ['bower'],
+          rootDir: './fixture',
+          secondaryDeps: true
+        });
+
+    should(files).length(2);
+    should(files[0]).endWith('jquery.min.js');
+    should(files[1]).endWith('bootstrap.min.js');
+  });
+
+  it('should pull in secondary dependencies and order them', function () {
+    var files = srcDeps({
+          packagers: ['bower'],
+          rootDir: './fixture',
+          secondaryDeps: true,
+          order: [
+            'bootstrap',
+            'jquery'
+          ]
+        });
+
+    should(files).length(2);
+    should(files[0]).endWith('bootstrap.min.js');
+    should(files[1]).endWith('jquery.min.js');
+  });
+
+  it('should pull in secondary dependencies and ignore them', function () {
+    var files = srcDeps({
+          packagers: ['bower'],
+          rootDir: './fixture',
+          secondaryDeps: true,
+          ignore: [
+            'jquery'
+          ]
+        });
+
+    should(files).length(1);
+    should(files[0]).endWith('bootstrap.min.js');
+  });
+
+  it('should include packages specified manually even if they are not in the main deps file', function () {
+    var files = srcDeps({
+          packagers: ['bower'],
+          rootDir: './fixture',
+          include: ['fake-package']
+        });
+
+    should(files).length(2);
+    should(files[0]).endWith('bootstrap.min.js');
+    should(files[1]).endWith('fake-package.min.js');
+  });
+
+  it('should ignore multiple occurences of the same dependant package', function () {
+    var files = srcDeps({
+          packagers: ['bower'],
+          rootDir: './fixture',
+          secondaryDeps: true,
+          include: ['fake-package']
+        });
+
+    should(files).length(3);
+    should(files[0]).endWith('jquery.min.js');
+    should(files[1]).endWith('bootstrap.min.js');
+    should(files[2]).endWith('fake-package.min.js');
   });
 });
