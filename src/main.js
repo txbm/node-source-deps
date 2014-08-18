@@ -29,11 +29,11 @@
   function _packagers () {
     return {
       bower: {
-        jsonFile: 'bower.json',
+        manifests: ['bower.json', '.bower.json'],
         pkgDir: 'bower_components'
       },
       npm: {
-        jsonFile: 'package.json',
+        manifests: ['package.json'],
         pkgDir: 'node_modules'
       }
     };
@@ -43,13 +43,13 @@
     return Object.prototype.toString.call(obj) === '[object Array]';
   }
 
-  function _pullDependencies (jsonFile, opts) {
-    var deps = jsonFile.dependencies || {},
+  function _pullDependencies (manifest, opts) {
+    var deps = manifest.dependencies || {},
         pkgList = [],
         current;
 
     if (opts.includeDevPackages) {
-      deps = _mergeObjects(deps, jsonFile.devDependencies || {});
+      deps = _mergeObjects(deps, manifest.devDependencies || {});
     }
     
     for (current in deps) {
@@ -82,7 +82,7 @@
     return matches.filter(function (m) { return typeof(m) !== 'undefined'; }).shift();
   }
 
-  function _resolveMains (pkgList, pkgDir, pkgrFileName, pkgrDefaultMain, overrides, done) {
+  function _resolveMains (pkgList, pkgDir, overrides, done) {
     var _check = function (p, pkg) {
           if (!fs.existsSync(p)) {
             _log('Package '.warn + colors.info(pkg) + ' file at '.warn + colors.info(p) + ' does not exist.'.warn);
@@ -129,21 +129,32 @@
     return paths;
   }
 
+  function _findManifest (prefix, manifests) {
+    var selected, p;
+    manifests.forEach(function (manifest, idx, arr) {
+      p = path.join(prefix, manifest);
+      if (!selected && fs.existsSync(p)) {
+        selected = p;
+      }
+    });
+    return selected;
+  }
+
   function _scanPkgr (pkgr, opts) {
     var pkgrEntry = _packagers()[pkgr],
         pkgList = [],
         resolved = {},
-        jsonPath,
+        manifestPath,
         pkgDirPath;
     
     if (!pkgrEntry) {
       throw new Error('Packager '.error + colors.info(pkgr) + ' not supported.'.error);
     }
 
-    jsonPath = path.join(opts.rootDir, pkgrEntry.jsonFile);
+    manifestPath = _findManifest(opts.rootDir, pkgrEntry.manifests);
 
-    if (!fs.existsSync(jsonPath)) {
-      throw new Error('Packager '.error + colors.info(pkgr) + ' missing JSON file '.error + colors.info(pkgrEntry.jsonFile) + ' @ '.error + colors.info(jsonPath));
+    if (!manifestPath) {
+      throw new Error('Packager '.error + colors.info(pkgr) + ' has no valid manifest files '.error + colors.info(pkgrEntry.manifests) + ' @ '.error);
     }
 
     pkgDirPath = path.join(opts.rootDir, pkgrEntry.pkgDir);
@@ -152,7 +163,7 @@
       throw new Error('Packager '.error + colors.info(pkgr) + ' missing package directory '.error + colors.info(pkgrEntry.pkgDir) + ' @ '.error + colors.info(pkgDirPath));
     }
 
-    pkgList = _pullDependencies(require(jsonPath), opts);
+    pkgList = _pullDependencies(require(manifestPath), opts);
 
     if (opts.include) {
       pkgList = pkgList.concat(opts.include);
@@ -167,7 +178,14 @@
 
         while (pLen--) {
           pCur = pkgList[pLen];
-          jPath = path.join(opts.rootDir, entry.pkgDir, pCur, entry.jsonFile);
+
+          jPath = _findManifest(path.join(opts.rootDir, entry.pkgDir, pCur), entry.manifests);
+          
+          if (!jPath) {
+            _log('Secondary Package'.warn + ' does not contain a valid manifest. Continuing...');
+            continue;
+          }
+
           secDeps = _pullDependencies(require(jPath), opts);
           Array.prototype.splice.apply(pkgList, [pLen, 0].concat(secDeps));
         }
@@ -177,8 +195,6 @@
     resolved = _resolveMains(
       pkgList,
       pkgDirPath,
-      pkgrEntry.jsonFile,
-      pkgrEntry.defaultMain,
       opts.overrides
     );
 

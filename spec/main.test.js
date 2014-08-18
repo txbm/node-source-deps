@@ -157,6 +157,24 @@ describe('gulp-srcdeps', function () {
     should(files[1]).endWith('bootstrap.min.js');
   });
 
+  it('should detect alternate manifest file patterns', function () {
+    var files = srcDeps({
+          packagers: ['bower'],
+          rootDir: './fixture',
+          secondaryDeps: true,
+          ignore: [
+            'bootstrap'
+          ],
+          include: [
+            'fake-package'
+          ]
+        });
+
+    should(files).length(2);
+    should(files[0]).endWith('jquery.min.js');
+    should(files[1]).endWith('fake-package.min.js');
+  });
+
   it('should pull in secondary dependencies and order them', function () {
     var files = srcDeps({
           packagers: ['bower'],
