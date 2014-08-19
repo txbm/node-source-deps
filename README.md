@@ -38,7 +38,7 @@ gulp.task('bundle', function () {
     include: [
       'some-package-apparently-not-listed-as-dependency'
     ],
-    secondaryDeps: true // Pull in dependencies of dependencies (in proper order too :)
+    recursive: true // Pull in dependencies of dependencies (in proper order too :)
   });
   gulp.src(depFiles)
   .pipe(concat(['src/**/*.js']))
@@ -123,15 +123,15 @@ depFiles = deps({
 
 ```
 
-#### Secondary Deps
+#### Recursive
 
-See this is cool because if used correctly you don't need to shim RequireJS for frontend code...
+Oh yeah... this does exactly what you think it does. Bye, bye RequireJS shims on the frontend.
 
 ```javascript
 
 depFiles = deps({
   packagers: ['bower'],
-  secondaryDeps: true
+  recursive: true
 });
 ```
 
