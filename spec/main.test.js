@@ -145,23 +145,29 @@ describe('gulp-srcdeps', function () {
     should(files2[2]).endWith('underscore.js');
   });
 
-  it('should pull in secondary dependencies if asked', function () {
+  it('should pull in child dependencies recursively if asked', function () {
     var files = srcDeps({
           packagers: ['bower'],
           rootDir: './fixture',
-          secondaryDeps: true
+          recursive: true,
+          include: [
+            'fake-package'
+          ]
         });
 
-    should(files).length(2);
+    should(files).length(5);
     should(files[0]).endWith('jquery.min.js');
     should(files[1]).endWith('bootstrap.min.js');
+    should(files[2]).endWith('fake-child-child-package.min.js');
+    should(files[3]).endWith('fake-child-package.min.js');
+    should(files[4]).endWith('fake-package.min.js');
   });
 
   it('should detect alternate manifest file patterns', function () {
     var files = srcDeps({
           packagers: ['bower'],
           rootDir: './fixture',
-          secondaryDeps: true,
+          recursive: true,
           ignore: [
             'bootstrap'
           ],
@@ -170,16 +176,18 @@ describe('gulp-srcdeps', function () {
           ]
         });
 
-    should(files).length(2);
-    should(files[0]).endWith('jquery.min.js');
-    should(files[1]).endWith('fake-package.min.js');
+    should(files).length(4);
+    should(files[0]).endWith('fake-child-child-package.min.js');
+    should(files[1]).endWith('jquery.min.js');
+    should(files[2]).endWith('fake-child-package.min.js');
+    should(files[3]).endWith('fake-package.min.js');
   });
 
   it('should pull in secondary dependencies and order them', function () {
     var files = srcDeps({
           packagers: ['bower'],
           rootDir: './fixture',
-          secondaryDeps: true,
+          recursive: true,
           order: [
             'bootstrap',
             'jquery'
@@ -195,7 +203,7 @@ describe('gulp-srcdeps', function () {
     var files = srcDeps({
           packagers: ['bower'],
           rootDir: './fixture',
-          secondaryDeps: true,
+          recursive: true,
           ignore: [
             'jquery'
           ]
@@ -221,13 +229,15 @@ describe('gulp-srcdeps', function () {
     var files = srcDeps({
           packagers: ['bower'],
           rootDir: './fixture',
-          secondaryDeps: true,
+          recursive: true,
           include: ['fake-package']
         });
 
-    should(files).length(3);
+    should(files).length(5);
     should(files[0]).endWith('jquery.min.js');
     should(files[1]).endWith('bootstrap.min.js');
-    should(files[2]).endWith('fake-package.min.js');
+    should(files[2]).endWith('fake-child-child-package.min.js');
+    should(files[3]).endWith('fake-child-package.min.js');
+    should(files[4]).endWith('fake-package.min.js');
   });
 });

@@ -1,5 +1,5 @@
 {
-  "name": "fake-package",
+  "name": "fake-child-package",
   "version": "2.1.1",
   "main": "",
   "license": "MIT",
@@ -21,7 +21,6 @@
     "library"
   ],
   "dependencies": {
-    "jquery": ">= 1.8.0",
-    "fake-child-package": "1.0.0"
+    "fake-child-child-package": "1.0.0"
   }
 }

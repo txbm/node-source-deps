@@ -169,26 +169,46 @@
       pkgList = pkgList.concat(opts.include);
     }
 
-    if (opts.secondaryDeps) {
-      (function (pkgList, entry, opts) {
-        var pLen = pkgList.length,
-            pCur,
-            jPath,
-            secDeps;
+    if (opts.recursive) {
+      pkgList = (function (pkgList, entry, opts) {
 
-        while (pLen--) {
-          pCur = pkgList[pLen];
+        var newList = [];
 
-          jPath = _findManifest(path.join(opts.rootDir, entry.pkgDir, pCur), entry.manifests);
-          
-          if (!jPath) {
-            _log('Secondary Package'.warn + ' does not contain a valid manifest. Continuing...');
-            continue;
+        function recursePkg (startPkg) {
+
+          var tree = [];
+
+          function walk (pkg) {
+            var jPath = _findManifest(path.join(opts.rootDir, entry.pkgDir, pkg), entry.manifests),
+                found;
+
+            if (!jPath) {
+              _log('Child Package'.warn + ' does not contain a valid manifest. Continuing...');
+              return;
+            }
+
+            found = _pullDependencies(require(jPath), opts);
+
+            if (found) {
+              Array.prototype.splice.apply(tree, [0, 0].concat(found));
+              found.forEach(function (pkg, idx, arr) {
+                return walk(pkg);
+              });
+            }
           }
 
-          secDeps = _pullDependencies(require(jPath), opts);
-          Array.prototype.splice.apply(pkgList, [pLen, 0].concat(secDeps));
+          walk(startPkg);
+          return tree;
         }
+
+        newList = pkgList.slice();
+
+        pkgList.forEach(function (pkg, idx, arr) {
+          Array.prototype.splice.apply(newList, [newList.indexOf(pkg), 0].concat(recursePkg(pkg)));
+        });
+
+        return newList;
+
       })(pkgList, pkgrEntry, opts);
     }
 
@@ -206,7 +226,7 @@
           packagers: ['npm', 'bower'],
           overrides: {},
           includeDevPackages: false,
-          secondaryDeps: false,
+          recursive: false,
           logOutput: false,
           rootDir: process.cwd(),
           order: [],
