@@ -51,7 +51,7 @@
     if (opts.includeDevPackages) {
       deps = _mergeObjects(deps, manifest.devDependencies || {});
     }
-    
+
     for (current in deps) {
       if (opts.ignore.indexOf(current) == -1) {
         pkgList.push(current);
@@ -59,7 +59,7 @@
         _log('Ignoring '.success + colors.info(current));
       }
     }
-    
+
     return pkgList;
   }
 
@@ -146,7 +146,7 @@
         resolved = {},
         manifestPath,
         pkgDirPath;
-    
+
     if (!pkgrEntry) {
       throw new Error('Packager '.error + colors.info(pkgr) + ' not supported.'.error);
     }
@@ -183,10 +183,11 @@
                 found;
 
             if (!jPath) {
-              _log('Child Package'.warn + ' does not contain a valid manifest. Continuing...');
+              _log('Child Package'.warn + ' of ' + colors.info(pkg) + ' does not contain a valid manifest. Continuing...');
               return;
             }
 
+            opts.includeDevPackages = false;
             found = _pullDependencies(require(jPath), opts);
 
             if (found) {
@@ -266,7 +267,7 @@
     opts.packagers.forEach(function (element, idx, array) {
       mains = _mergeObjects(mains, _scanPkgr(element, opts));
     });
-    
+
     opts.order.forEach(function (pkg, idx, array) {
       addPkg(pkg, idx);
       delete mains[pkg];
@@ -275,7 +276,7 @@
     for (currentPkg in mains) {
       addPkg(currentPkg);
     }
-    
+
     _log('Loaded '.success + colors.info(pathList.length) + ' dependent files.'.success);
 
     return pathList;
