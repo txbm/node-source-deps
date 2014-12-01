@@ -5,10 +5,9 @@
       path = require('path'),
       fs = require('fs'),
       colors = require('colors'),
-      _log = function () {
-        arguments[0] = '[' + colors.grey('SOURCE DEPS') + '] ' + arguments[0];
-        console.log.apply(this, arguments);
-      };
+      u = require('./utils.js'),
+      data = require('./data.json'),
+      log;
 
   colors.setTheme({
     info: 'cyan',
@@ -17,46 +16,20 @@
     success: 'green'
   });
 
-  function _mergeObjects (o1, o2) {
-    var k, v;
-    for (k in o2) {
-      v = o2[k];
-      o1[k] = v;
-    }
-    return o1;
-  }
-
-  function _packagers () {
-    return {
-      bower: {
-        manifests: ['bower.json', '.bower.json'],
-        pkgDir: 'bower_components'
-      },
-      npm: {
-        manifests: ['package.json'],
-        pkgDir: 'node_modules'
-      }
-    };
-  }
-
-  function _isArray (obj) {
-    return Object.prototype.toString.call(obj) === '[object Array]';
-  }
-
   function _pullDependencies (manifest, opts) {
     var deps = manifest.dependencies || {},
         pkgList = [],
         current;
 
     if (opts.includeDevPackages) {
-      deps = _mergeObjects(deps, manifest.devDependencies || {});
+      deps = u.mergeObjects(deps, manifest.devDependencies || {});
     }
 
     for (current in deps) {
-      if (opts.ignore.indexOf(current) == -1) {
+      if (opts.exclude.indexOf(current) == -1) {
         pkgList.push(current);
       } else {
-        _log('Ignoring '.success + colors.info(current));
+        log('Excluding '.success + colors.info(current));
       }
     }
 
@@ -85,7 +58,7 @@
   function _resolveMains (pkgList, pkgDir, overrides, done) {
     var _check = function (p, pkg) {
           if (!fs.existsSync(p)) {
-            _log('Package '.warn + colors.info(pkg) + ' file at '.warn + colors.info(p) + ' does not exist.'.warn);
+            log('Package '.warn + colors.info(pkg) + ' file at '.warn + colors.info(p) + ' does not exist.'.warn);
             return false;
           }
           return true;
@@ -104,14 +77,14 @@
                 return false;
               };
 
-          if (_isArray(filepaths)) {
+          if (u.isArray(filepaths)) {
             filepaths = filepaths.map(_processPath).filter(function (path) { return !!path; });
           } else if (filepaths) {
             filepaths = _processPath(filepaths);
           }
 
-          if (!filepaths || (_isArray(filepaths) && filepaths.length === 0)) {
-            _log('Package '.warn + colors.info(pkg) + ' has no valid paths. Recommend override.'.warn);
+          if (!filepaths || (u.isArray(filepaths) && filepaths.length === 0)) {
+            log('Package '.warn + colors.info(pkg) + ' has no valid paths. Recommend override.'.warn);
             filepaths = undefined;
           }
 
@@ -141,7 +114,7 @@
   }
 
   function _scanPkgr (pkgr, opts) {
-    var pkgrEntry = _packagers()[pkgr],
+    var pkgrEntry = data.packagers[pkgr],
         pkgList = [],
         resolved = {},
         manifestPath,
@@ -165,8 +138,13 @@
 
     pkgList = _pullDependencies(require(manifestPath), opts);
 
-    if (opts.include) {
-      pkgList = pkgList.concat(opts.include);
+    if (opts.only.length > 0) {
+      log('Limiting to: '.success + colors.info(opts.only));
+      pkgList = u.arrayIntersect(pkgList, opts.only);
+    } else {
+      if (opts.include) {
+        pkgList = pkgList.concat(opts.include);
+      }
     }
 
     if (opts.recursive) {
@@ -183,7 +161,7 @@
                 found;
 
             if (!jPath) {
-              _log('Child Package'.warn + ' of ' + colors.info(pkg) + ' does not contain a valid manifest. Continuing...');
+              log('Child Package'.warn + ' of ' + colors.info(pkg) + ' does not contain a valid manifest. Continuing...');
               return;
             }
 
@@ -231,8 +209,9 @@
           logOutput: false,
           rootDir: process.cwd(),
           order: [],
-          ignore: [],
-          include: []
+          exclude: [],
+          include: [],
+          only: []
         },
         pathList = [],
         mains = {},
@@ -249,7 +228,7 @@
             return;
           }
 
-          if (_isArray(path)) {
+          if (u.isArray(path)) {
             pathList = pathList.concat(path);
             return;
           }
@@ -257,15 +236,17 @@
         },
         currentPkg;
 
-    opts = _mergeObjects(settings, opts);
+    opts = u.mergeObjects(settings, opts);
     opts.rootDir = path.resolve(opts.rootDir);
 
     if (!opts.logOutput) {
-      _log = function () {};
+      log = function () {};
+    } else {
+      log = u.log;
     }
 
     opts.packagers.forEach(function (element, idx, array) {
-      mains = _mergeObjects(mains, _scanPkgr(element, opts));
+      mains = u.mergeObjects(mains, _scanPkgr(element, opts));
     });
 
     opts.order.forEach(function (pkg, idx, array) {
@@ -277,7 +258,7 @@
       addPkg(currentPkg);
     }
 
-    _log('Loaded '.success + colors.info(pathList.length) + ' dependent files.'.success);
+    log('Loaded '.success + colors.info(pathList.length) + ' dependent files.'.success);
 
     return pathList;
   };

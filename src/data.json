@@ -1,0 +1,18 @@
+{
+	"packagers": {
+	  "bower": {
+	    "manifests": [
+	      "bower.json",
+	      ".bower.json"
+	    ],
+	    "pkgDir": "bower_components"
+	  },
+	  "npm": {
+	    "manifests": [
+	      "package.json"
+	    ],
+	    "pkgDir": "node_modules"
+	  }
+	}
+}
+

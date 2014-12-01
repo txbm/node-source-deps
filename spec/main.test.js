@@ -54,7 +54,7 @@ describe('gulp-srcdeps', function () {
             rootDir: './fixture'
           });
         };
-    
+
     should(badCall).throw();
   });
 
@@ -67,14 +67,14 @@ describe('gulp-srcdeps', function () {
 
     //should(badCall).throw();
   });
-  
+
   it('should deal with multiple dist files per package', function () {
     var files = srcDeps({
           packagers: ['npm'],
           rootDir: './fixture',
           overrides: {
             underscore: [
-              'underscore.js', 
+              'underscore.js',
               'underscore-min.js'
             ]
           }
@@ -97,11 +97,11 @@ describe('gulp-srcdeps', function () {
     should(files[2]).endWith('angular-mocks.js');
   });
 
-  it('should ignore packages that you want to ignore', function () {
+  it('should exclude packages that you want to exclude', function () {
     var files = srcDeps({
           packagers: ['npm'],
           rootDir: './fixture',
-          ignore: [
+          exclude: [
             'underscore'
           ]
         });
@@ -128,7 +128,7 @@ describe('gulp-srcdeps', function () {
           rootDir: './fixture',
           overrides: {
             underscore: [
-              'underscore-min.js', 
+              'underscore-min.js',
               'underscore.js'
             ]
           },
@@ -168,7 +168,7 @@ describe('gulp-srcdeps', function () {
           packagers: ['bower'],
           rootDir: './fixture',
           recursive: true,
-          ignore: [
+          exclude: [
             'bootstrap'
           ],
           include: [
@@ -199,12 +199,12 @@ describe('gulp-srcdeps', function () {
     should(files[1]).endWith('jquery.min.js');
   });
 
-  it('should pull in secondary dependencies and ignore them', function () {
+  it('should pull in secondary dependencies and exclude them', function () {
     var files = srcDeps({
           packagers: ['bower'],
           rootDir: './fixture',
           recursive: true,
-          ignore: [
+          exclude: [
             'jquery'
           ]
         });
@@ -225,7 +225,7 @@ describe('gulp-srcdeps', function () {
     should(files[1]).endWith('fake-package.min.js');
   });
 
-  it('should ignore multiple occurences of the same dependant package', function () {
+  it('should exclude multiple occurences of the same dependant package', function () {
     var files = srcDeps({
           packagers: ['bower'],
           rootDir: './fixture',
@@ -240,4 +240,18 @@ describe('gulp-srcdeps', function () {
     should(files[3]).endWith('fake-child-package.min.js');
     should(files[4]).endWith('fake-package.min.js');
   });
+
+
+  it('should only include packages specified in "only"', function () {
+    var files = srcDeps({
+      packagers: ['npm', 'bower'],
+      rootDir: './fixture',
+      recursive: true,
+      only: ['bootstrap']
+    });
+
+    should(files).length(2);
+    should(files[1]).endWith('bootstrap.min.js');
+  });
+
 });
