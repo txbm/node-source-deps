@@ -156,8 +156,8 @@ describe('gulp-srcdeps', function () {
         });
 
     should(files).length(5);
-    should(files[0]).endWith('jquery.min.js');
-    should(files[1]).endWith('bootstrap.min.js');
+    should(files[0]).endWith('jquery.js');
+    should(files[1]).endWith('bootstrap.js');
     should(files[2]).endWith('fake-child-child-package.min.js');
     should(files[3]).endWith('fake-child-package.min.js');
     should(files[4]).endWith('fake-package.min.js');
@@ -178,7 +178,7 @@ describe('gulp-srcdeps', function () {
 
     should(files).length(4);
     should(files[0]).endWith('fake-child-child-package.min.js');
-    should(files[1]).endWith('jquery.min.js');
+    should(files[1]).endWith('jquery.js');
     should(files[2]).endWith('fake-child-package.min.js');
     should(files[3]).endWith('fake-package.min.js');
   });
@@ -195,8 +195,8 @@ describe('gulp-srcdeps', function () {
         });
 
     should(files).length(2);
-    should(files[0]).endWith('bootstrap.min.js');
-    should(files[1]).endWith('jquery.min.js');
+    should(files[0]).endWith('bootstrap.js');
+    should(files[1]).endWith('jquery.js');
   });
 
   it('should pull in secondary dependencies and exclude them', function () {
@@ -210,7 +210,7 @@ describe('gulp-srcdeps', function () {
         });
 
     should(files).length(1);
-    should(files[0]).endWith('bootstrap.min.js');
+    should(files[0]).endWith('bootstrap.js');
   });
 
   it('should include packages specified manually even if they are not in the main deps file', function () {
@@ -221,7 +221,7 @@ describe('gulp-srcdeps', function () {
         });
 
     should(files).length(2);
-    should(files[0]).endWith('bootstrap.min.js');
+    should(files[0]).endWith('bootstrap.js');
     should(files[1]).endWith('fake-package.min.js');
   });
 
@@ -234,8 +234,8 @@ describe('gulp-srcdeps', function () {
         });
 
     should(files).length(5);
-    should(files[0]).endWith('jquery.min.js');
-    should(files[1]).endWith('bootstrap.min.js');
+    should(files[0]).endWith('jquery.js');
+    should(files[1]).endWith('bootstrap.js');
     should(files[2]).endWith('fake-child-child-package.min.js');
     should(files[3]).endWith('fake-child-package.min.js');
     should(files[4]).endWith('fake-package.min.js');
@@ -251,7 +251,7 @@ describe('gulp-srcdeps', function () {
     });
 
     should(files).length(2);
-    should(files[1]).endWith('bootstrap.min.js');
+    should(files[1]).endWith('bootstrap.js');
   });
 
 });
