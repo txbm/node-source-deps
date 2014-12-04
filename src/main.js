@@ -38,8 +38,8 @@
 
   function _guessDistFiles (pkgDir, pkg) {
     var testPatterns = [
-          new RegExp(pkg + '.min.js$'),
-          new RegExp(pkg + '.js$')
+          new RegExp(pkg + '.js$'),
+          new RegExp(pkg + '.min.js$')
         ],
         matches = [],
         files = wrench.readdirSyncRecursive(path.join(pkgDir, pkg));
