@@ -8,14 +8,6 @@
       arguments[0] = '[' + colors.grey('SOURCE DEPS') + '] ' + arguments[0];
       console.log.apply(this, arguments);
     },
-    mergeObjects: function (o1, o2) {
-      var k, v;
-      for (k in o2) {
-        v = o2[k];
-        o1[k] = v;
-      }
-      return o1;
-    },
     isArray: function (obj) {
       return Object.prototype.toString.call(obj) === '[object Array]';
     },

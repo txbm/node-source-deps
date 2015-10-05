@@ -1,0 +1,26 @@
+{
+  "name": "fake-child-package",
+  "version": "2.1.1",
+  "main": "",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "build",
+    "speed",
+    "test",
+    "*.md",
+    "AUTHORS.txt",
+    "Gruntfile.js",
+    "package.json"
+  ],
+  "devDependencies": {
+  },
+  "keywords": [
+    "jquery",
+    "javascript",
+    "library"
+  ],
+  "dependencies": {
+    "fake-child-child-package": "1.0.0"
+  }
+}

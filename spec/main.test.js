@@ -34,16 +34,28 @@ describe('gulp-srcdeps', function () {
     should(files).length(4);
   });
 
+  it('should accept override data for packager definitions', function () {
+    var files = srcDeps({
+      packagers: ['bower'],
+      rootDir: './fixture',
+      packagerData: {bower: {pkgDir: 'bower_alternate'}}
+    });
+
+    should(files).length(1);
+    should(files[0]).endWith('bootstrap.js');
+  });
+
   it('should accept override values for main paths', function () {
     var files = srcDeps({
           packagers: ['npm'],
           rootDir: './fixture',
           overrides: {
-            underscore: './underscore.js'
+            underscore: './underscore-min.js'
           }
         });
 
-    should(files).length(4);
+    should(files).length(3);
+    should(files[2]).endWith('underscore-min.js');
   });
 
 
@@ -65,7 +77,7 @@ describe('gulp-srcdeps', function () {
           });
         };
 
-    //should(badCall).throw();
+    should(badCall).throw();
   });
 
   it('should deal with multiple dist files per package', function () {
@@ -80,7 +92,7 @@ describe('gulp-srcdeps', function () {
           }
         });
 
-    should(files).length(5);
+    should(files).length(4);
   });
 
   it('should allow the specification of a particular load order', function () {
@@ -106,7 +118,7 @@ describe('gulp-srcdeps', function () {
           ]
         });
 
-    should(files).length(3);
+    should(files).length(2);
   });
 
   it('should order packages with multiple files', function () {

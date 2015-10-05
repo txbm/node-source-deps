@@ -6,7 +6,8 @@
       fs = require('fs'),
       colors = require('colors'),
       u = require('./utils.js'),
-      data = require('./data.json'),
+      obj = require('./obj-utils.js'),
+      defaultPackagerData = require('./packager-data.json'),
       log;
 
   colors.setTheme({
@@ -22,7 +23,7 @@
         current;
 
     if (opts.includeDevPackages) {
-      deps = u.mergeObjects(deps, manifest.devDependencies || {});
+      deps = obj.merge(deps, manifest.devDependencies || {});
     }
 
     for (current in deps) {
@@ -114,7 +115,7 @@
   }
 
   function _scanPkgr (pkgr, opts) {
-    var pkgrEntry = data.packagers[pkgr],
+    var pkgrEntry = opts.packagerData[pkgr],
         pkgList = [],
         resolved = {},
         manifestPath,
@@ -203,6 +204,7 @@
   module.exports = function (opts) {
     var settings = {
           packagers: ['npm', 'bower'],
+          packagerData: {},
           overrides: {},
           includeDevPackages: false,
           recursive: false,
@@ -234,22 +236,24 @@
           }
           pathList.push(path);
         },
-        currentPkg;
+        currentPkg,
+        pData;
 
-    opts = u.mergeObjects(settings, opts);
-    opts.rootDir = path.resolve(opts.rootDir);
+    settings = obj.merge(settings, opts);
+    settings.rootDir = path.resolve(settings.rootDir);
+    settings.packagerData = obj.merge(defaultPackagerData, settings.packagerData);
 
-    if (!opts.logOutput) {
+    if (!settings.logOutput) {
       log = function () {};
     } else {
       log = u.log;
     }
 
-    opts.packagers.forEach(function (element, idx, array) {
-      mains = u.mergeObjects(mains, _scanPkgr(element, opts));
+    settings.packagers.forEach(function (packager, idx, array) {
+      mains = obj.merge(mains, _scanPkgr(packager, settings));
     });
 
-    opts.order.forEach(function (pkg, idx, array) {
+    settings.order.forEach(function (pkg, idx, array) {
       addPkg(pkg, idx);
       delete mains[pkg];
     });
